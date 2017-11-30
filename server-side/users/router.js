@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { User } = require('./models');
+const { Eligibility } = require('./eligibilityApi')
 const router = express.Router();
 const jsonParser = bodyParser.json();
-
 
 router.post('/', jsonParser, (req, res, next) => {
   console.log(req.body)
@@ -19,7 +19,16 @@ router.post('/', jsonParser, (req, res, next) => {
   }
 
   let { first_name, last_name, DOB, phone, insurance_carrier, insurance_ID } = req.body;
+  
+  Eligibility.getDetails()
+  .then(function (result) {
+        console.log('api result',result)
+      })
+      .catch(err => {
+        console.log("error");
+      });
 
+  
   return User
     .create({
       first_name,
@@ -29,19 +38,14 @@ router.post('/', jsonParser, (req, res, next) => {
       insurance_carrier,
       insurance_ID
     })
+    
     .then(user => {
-      console.log(user)
-      return res.status(201).json({
-        code: 201,
-        message: 'User Created',
-        user: user.apiRepr()
-      })
+      res.status(201).json({ code: 201, message: 'USER CREATED' });
     })
     .catch(err => {
       res.status(500).json({ code: 500, message: 'Internal server error' });
     });
 });
-
 
 router.get('/', (req, res) => {
   return User
